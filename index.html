@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>Публикации</title>
+</head>
+<body>
+    <div>
+        <div class="flex justify-between items-center">
+            <div class="text-xl font-bold">
+                Публикации
+            </div>
+            <div class="flex items-center space-x-2 m-2">
+                <label for="search" class="font-bold">Поиск</label>
+                <input name="search" id="search" type="text" placeholder="введите текст..." required
+                       class="border border-gray-300 p-1 rounded-md"/>
+                <button type="button" id="searchButton" class="transition-transform duration-200 hover:scale-95 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5f6368"
+                         class="transition-all duration-200 hover:scale-95">
+                        <path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <hr class="my-1 border-gray-300" />
+        <div class="posts">
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('searchButton').addEventListener('click', function () {
+            const searchWord = document.querySelector('#search').value
+            searchPosts(searchWord)
+        })
+
+        async function searchPosts(searchWord)
+        {
+            try
+            {
+                if (searchWord.length < 3)
+                {
+                    throw new Error('Фраза должна быть длиннее 2 символов')
+                }
+
+                const response = await fetch('getComments.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        searchWord: searchWord
+                    })
+                })
+                const data = await response.json()
+                addData(data.data)
+            }
+            catch (e)
+            {
+                console.log(e.message)
+            }
+        }
+
+        function addData(data) {
+            const postsBody = document.querySelector('.posts');
+            postsBody.innerHTML = "";
+
+            data.forEach(post => {
+                const postDiv = document.createElement('div');
+                postDiv.id = `post${post.postId}`;
+                postDiv.className = 'mb-6 p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-200';
+
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'post-title text-xl font-bold text-gray-800 mb-2 pb-2 border-b border-gray-100';
+                titleDiv.textContent = post.title;
+
+                const commentDiv = document.createElement('div');
+                commentDiv.className = 'post-comment text-gray-600 mt-2';
+                commentDiv.textContent = post.body;
+
+                postDiv.appendChild(titleDiv);
+                postDiv.appendChild(commentDiv);
+                postsBody.appendChild(postDiv);
+            });
+        }
+    </script>
+</body>
+</html>
